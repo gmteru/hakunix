@@ -1,5 +1,8 @@
 #![no_std]
 #![no_main]
+#![feature(custom_test_frameworks)]
+#![test_runner(test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
 mod vga_buffer;
 
@@ -11,10 +14,30 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
+
+#[cfg(test)]
+fn test_runner(tests: &[&dyn Fn()]) { 
+    println!("Running {} tests", tests.len());
+    for test in tests {
+        test();
+    }
+
+    exit_qemu(QemuExitCode::Success);
+}
+
+#[test_case]
+fn trivial_assertion() {
+    print!("trivial assertion... ");
+    assert_eq!(1, 1);
+    println!("[OK]")
+}
+
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Hello world!");    
-    panic!("This is a panic message test");
+
+    #[cfg(test)]
+    test_main();
 
     loop{}
 }
