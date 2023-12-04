@@ -29,4 +29,3 @@ fn panic(info: &PanicInfo) -> ! {
 fn panic(info: &PanicInfo) -> ! {
     hakunix_os::test_panic_handler(info)
 }
-

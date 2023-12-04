@@ -13,8 +13,8 @@ pub trait Testable {
     fn run(&self) -> ();
 }
 
-impl<T> Testable for T 
-where 
+impl<T> Testable for T
+where
     T: Fn(),
 {
     fn run(&self) {
@@ -32,7 +32,6 @@ pub fn test_runner(tests: &[&dyn Testable]) {
 
     exit_qemu(QemuExitCode::Success);
 }
-
 
 pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
