@@ -10,6 +10,7 @@ use hakunix_os::println;
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Hello world!");
+
     hakunix_os::init();
 
     #[cfg(test)]
