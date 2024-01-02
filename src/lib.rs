@@ -15,6 +15,22 @@ pub mod global_descriptor_table;
 pub fn init() {
     global_descriptor_table::init();
     interrupts::init_idt();
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
+}
+
+#[cfg(test)]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    init();
+    test_main();
+    hlt_loop();
+}
+
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
 
 pub trait Testable {
@@ -46,22 +62,14 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("ERROR: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
 
-    loop {}
-}
-
-#[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    init();
-    test_main();
-    loop {}
+    hlt_loop();
 }
 
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{info}");
-    loop {}
+    hlt_loop();
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
