@@ -1,10 +1,12 @@
+use crate::hlt_loop;
 use crate::{global_descriptor_table, print, println};
 use lazy_static::lazy_static;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use pic8259::ChainedPics;
 use spin::Mutex;
 use x86_64::instructions::port::Port;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use x86_64::registers::control::Cr2;
+use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -32,6 +34,7 @@ pub static PICS: spin::Mutex<ChainedPics> =
 lazy_static! {
     static ref IDT: InterruptDescriptorTable = {
         let mut idt = InterruptDescriptorTable::new();
+        idt.page_fault.set_handler_fn(page_fault_handler);
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         unsafe {
             idt.double_fault
@@ -51,6 +54,17 @@ pub fn init_idt() {
 #[test_case]
 fn test_breakpoint_exception() {
     x86_64::instructions::interrupts::int3();
+}
+
+extern "x86-interrupt" fn page_fault_handler(
+    stack_frame: InterruptStackFrame,
+    error_code: PageFaultErrorCode,
+) {
+    println!("[CPU EXCEPTION]: PAGE FAULT");
+    println!("ACCESSED ADDRESS: {:?}", Cr2::read());
+    println!("ERROR CODE: {:?}", error_code);
+    println!("{:#?}", stack_frame);
+    hlt_loop();
 }
 
 extern "x86-interrupt" fn double_fault_handler(
