@@ -7,10 +7,10 @@
 
 use core::panic::PanicInfo;
 
+pub mod global_descriptor_table;
 pub mod interrupts;
 pub mod serial;
 pub mod vga_buffer;
-pub mod global_descriptor_table;
 
 pub fn init() {
     global_descriptor_table::init();

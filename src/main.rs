@@ -9,7 +9,7 @@ use hakunix_os::println;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello world!");
+    println!("Hakunix OS (ver. 0.1.0-alpha)");
 
     hakunix_os::init();
 
